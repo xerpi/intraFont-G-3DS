@@ -101,13 +101,14 @@ int intraFontGetBMP(intraFont *font, unsigned short id, unsigned char glyphtype)
 			int i = 0,j,xx,yy;
 			unsigned char nibble, value = 0;
 			if (font->fileType == FILETYPE_PGF) { //for compressed pgf format
-				while (i < (glyph->width * glyph->height)) {
+				while ( i < (glyph->width*glyph->height)) {
+					nibble = intraFontGetV(4,font->fontdata,&b);
 
-					nibble = intraFontGetV(4, font->fontdata, &b);
-					if (nibble < 8) value = intraFontGetV(4, font->fontdata, &b);
+					if (nibble < 8) value = intraFontGetV(4,font->fontdata,&b);
 
 					for (j = 0; (j <= ((nibble<8)?(nibble):(15-nibble))) && (i < (glyph->width*glyph->height)); j++) {
-						if (nibble >= 8) value = intraFontGetV(4, font->fontdata, &b);
+						if (nibble >= 8) value = intraFontGetV(4,font->fontdata,&b);
+
 						if (glyph->flags & PGF_BMP_H_ROWS) {
 							xx = i%glyph->width;
 							yy = i/glyph->width;
@@ -115,20 +116,12 @@ int intraFontGetBMP(intraFont *font, unsigned short id, unsigned char glyphtype)
 							xx = i/glyph->height;
 							yy = i%glyph->height;
 						}
-						/*if ((font->texX + xx) & 1) {
-							font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0x0F;
-							font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value<<4);
-						} else {
-							font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0xF0;
-							font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value);
-						}*/
-						/* RGBA8 */
 						if ((font->texX + xx) & 1) {
-							//font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)*2] &= 0x0F;
-							((u32 *)font->texture)[(font->texX + xx) + (font->texY + yy) * font->texWidth] = clut[(value<<4)];
+							font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0x0F;
+							font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value<<4);
 						} else {
-							//font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)*2] &= 0xF0;
-							((u32 *)font->texture)[(font->texX + xx) + (font->texY + yy) * font->texWidth] = clut[value];
+							font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0xF0;
+							font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value);
 						}
 						i++;
 					}
@@ -155,20 +148,20 @@ int intraFontGetBMP(intraFont *font, unsigned short id, unsigned char glyphtype)
 								b -= 16;
 							} */
 							if ((font->texX + (7-(xx&7)+(xx&248))) & 1) {
-								font->texture[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] &= 0x0F;
-								font->texture[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] |= (value<<4);
+								font->palette_tex[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] &= 0x0F;
+								font->palette_tex[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] |= (value<<4);
 							} else {
-								font->texture[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] &= 0xF0;
-								font->texture[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] |= (value);
+								font->palette_tex[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] &= 0xF0;
+								font->palette_tex[((font->texX + (7-(xx&7)+(xx&248))) + (font->texY + yy) * font->texWidth)>>1] |= (value);
 							}
 						} else { //PGF_SHADOWGLYPH
 							value = intraFontGetV(4,font->fontdata,&b);
 							if ((font->texX + xx) & 1) {
-								font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0x0F;
-								font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value<<4);
+								font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0x0F;
+								font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value<<4);
 							} else {
-								font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0xF0;
-								font->texture[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value);
+								font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] &= 0xF0;
+								font->palette_tex[((font->texX + xx) + (font->texY + yy) * font->texWidth)>>1] |= (value);
 							}
 						}
 
@@ -178,12 +171,12 @@ int intraFontGetBMP(intraFont *font, unsigned short id, unsigned char glyphtype)
 
 			//erase border around glyph
 			for (i = font->texX/2; i < (font->texX+glyph->width+1)/2; i++) {
-					font->texture[i + (font->texY-1)*font->texWidth/2] = 0;
-					font->texture[i + (font->texY+glyph->height)*font->texWidth/2] = 0;
+					font->palette_tex[i + (font->texY-1)*font->texWidth/2] = 0;
+					font->palette_tex[i + (font->texY+glyph->height)*font->texWidth/2] = 0;
 			}
 			for (i = font->texY-1; i < (font->texY+glyph->height+1); i++) {
-					font->texture[((font->texX-1) + (i*font->texWidth))>>1] &= (font->texX & 1) ? 0xF0 : 0x0F;
-					font->texture[((font->texX+glyph->width) + (i*font->texWidth))>>1] &= ((font->texX+glyph->width) & 1) ? 0x0F : 0xF0;
+					font->palette_tex[((font->texX-1) + (i*font->texWidth))>>1] &= (font->texX & 1) ? 0xF0 : 0x0F;
+					font->palette_tex[((font->texX+glyph->width) + (i*font->texWidth))>>1] &= ((font->texX+glyph->width) & 1) ? 0x0F : 0xF0;
 			}
 			font->texX += glyph->width+1; //add empty gap to prevent interpolation artifacts from showing
 
@@ -290,29 +283,26 @@ static int intraFontTile(intraFont *font)
 {
 	int height = font->texHeight;
 	int width = font->texWidth;
-
-	u8 *tmp = linearAlloc(width * height * 4);
-
 	int i, j, k, l = 0;
 
-	/*for (j = 0; j < height; j++) {
-		for (i = 0; i < width; i++) {
-			((u32 *)font->texture)[i + j*width] = 0xFFFF;
-		}
-	}*/
-
+	u32 *p = (u32 *)font->texture;
 	for (j = 0; j < height; j+=8) {
 		for (i = 0; i < width; i+=8) {
 			for (k = 0; k < 8*8; k++) {
 				int x = i + tile_order[k]%8;
 				int y = j + (tile_order[k] - (x-i))/8;
-				u32 v = ((u32 *)font->texture)[x + (height-1-y)*width];
-				((u32 *)tmp)[l++] = v;//__builtin_bswap32(v);
+
+				u8 idx = ((u8 *)font->palette_tex)[(x + (height-1-y)*width)>>1];
+
+				if (x & 0b1) {
+					p[l] = __builtin_bswap32(clut[(idx >> 4)]);
+				} else {
+					p[l] = __builtin_bswap32(clut[(idx & 0x0F)]);
+				}
+				l++;
 			}
 		}
 	}
-	memcpy(font->texture, tmp, width * height * 4);
-	linearFree(tmp);
 
 	font->options |= INTRAFONT_CACHE_ASCII;
 
@@ -342,7 +332,10 @@ int intraFontPreCache(intraFont *font, unsigned int options)
 		if (font->texY > y || font->texYSize < font->shadowGlyph[i].height) font->texYSize = font->shadowGlyph[i].height; //minimize ysize
 		if (font->texY < y) return 0;																//char did not fit into cache -> abort precache (should reset cache and glyph.flags)
 	}
-	font->texHeight = ((font->texY) + (font->texYSize) + 7)&~7;
+
+	// HACK: 3DS needs base2 texture height's. The next line of code
+	// can change the height to be non base2, so I've commented it.
+	//font->texHeight = ((font->texY) + (font->texYSize) + 7)&~7;
 	if (font->texHeight > font->texWidth) font->texHeight = font->texWidth;
 
 	//reduce fontdata
@@ -491,7 +484,8 @@ intraFont* intraFontLoad(const char *filename, unsigned int options)
 		font->isRotated = 0;
 	font->altFont = NULL;						 //no alternative font
 	font->filename = (char *)malloc((strlen(filename)+1) * sizeof(char));
-	font->texture = (unsigned char*)linearAlloc(font->texWidth * font->texHeight * 4); //RGBA8
+	font->palette_tex = (unsigned char *)memalign(16,font->texWidth*font->texHeight>>1);
+	font->texture = (unsigned char*)linearAlloc(font->texWidth * font->texHeight * 4);
 
 	if (!font->filename || !font->texture) {
 		fclose(file);
@@ -726,6 +720,7 @@ void intraFontUnload(intraFont *font)
 
 	if (font->filename) free(font->filename);
 	if (font->fontdata) free(font->fontdata);
+	if (font->palette_tex) free(font->palette_tex);
 	if (font->texture) linearFree(font->texture);
 
 	if (font->fileType == FILETYPE_PGF) {

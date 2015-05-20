@@ -17,9 +17,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#define WHITE 0xFFFFFFFF
-#define GRAY  0xFF7F7F7F
-#define BLACK 0xFF000000
+
+#define WHITE RGBA8(255, 255, 255, 255)
+#define BLACK RGBA8(0, 0, 0, 255)
 
 
 int main()
@@ -32,7 +32,7 @@ int main()
 
 	intraFontInit();
 	intraFont *font = intraFontLoad("/ltn8.pgf", INTRAFONT_CACHE_ASCII);
-	intraFontSetStyle(font,1.f,0,0,0.f,INTRAFONT_ALIGN_CENTER);
+	intraFontSetStyle(font, 1.0f, BLACK, WHITE, 0.0f, INTRAFONT_ALIGN_LEFT);
 
 	/*struct Sinusoid
 	{
@@ -47,6 +47,7 @@ int main()
 
 	float x, tmp_angle;
 	int i;*/
+	char buf[64];
 
 	while (aptMainLoop()) {
 
@@ -58,8 +59,10 @@ int main()
 
 		sf2d_start_frame(GFX_TOP, GFX_LEFT);
 
-			intraFontSetStyle(font, 2.f, BLACK, WHITE, 0.0f, INTRAFONT_ALIGN_LEFT);
-			intraFontPrint(font, 20, 30, "ola k ase");
+			sprintf(buf, "fps: %f", sf2d_get_fps());
+
+			intraFontPrint(font, 20, 30, buf);
+			intraFontPrint(font, 20, 50, "ola k ase");
 
 			//sf2d_draw_rectangle(50, 60, 50, 50, RGBA8(0,255,0,255));
 
