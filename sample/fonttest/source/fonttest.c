@@ -140,8 +140,8 @@ int main()
 			y += 17;
 			intraFontPrint(ltn[8],10,y,"JPN (UTF8):");
 			char utf8_jpn[] = {0xE3,0x81,0x93,0xE3,0x82,0x93,0xE3,0x81,0xAB,0xE3,0x81,0xA1,0xE3,0x81,0xAF,0x20,0xE4,0xB8,0x96,0xE7,0x95,0x8C,0};
-			intraFontSetEncoding(jpn0,INTRAFONT_STRING_UTF8);			//temporarely switch to UTF-8 (INTRAFONT_STRING_SJIS was set in intraFontLoad call)
-			x = intraFontPrint(jpn0,110,y,utf8_jpn);						//print UTF-8 encoded string
+			intraFontSetEncoding(jpn0,INTRAFONT_STRING_UTF8);		//temporarely switch to UTF-8 (INTRAFONT_STRING_SJIS was set in intraFontLoad call)
+			x = intraFontPrint(jpn0,110,y,utf8_jpn);			//print UTF-8 encoded string
 			if (x == 110) intraFontPrint(ltn[8],110,y,"[n/a]");
 			intraFontSetEncoding(jpn0,INTRAFONT_STRING_SJIS);			//switch back to S-JIS
 
@@ -171,7 +171,7 @@ int main()
 			unsigned short ucs2_all[] = { 0x0041,0x0192,0x3401,0x3402,0x4E01,0x4E02,0xAC01,0xAC02,0xE1BE,0};
 			x = intraFontPrintUCS2(ltn[8],350,y,ucs2_all);			//print chars from all fonts (using alternative fonts,which were set after font loading)
 
-			/*
+
 			y += 17;
 			intraFontPrint(ltn[8],10,y,"Colors: ");
 			intraFontSetStyle(ltn[8],1.0f,RED,BLUE,0.f,0);
@@ -186,13 +186,13 @@ int main()
 			x = intraFontPrint(ltn[8],x,y,"glowing,");
 			float t = ((float)(clock() % CLOCKS_PER_SEC)) / ((float)CLOCKS_PER_SEC);
 			int val = (t < 0.5f) ? t*511 : (1.0f-t)*511;
-			intraFontSetStyle(ltn[8],1.0f,LITEGRAY,(0xFF<<24)+(val<<16)+(val<<8)+(val),0.f,0);
+			intraFontSetStyle(ltn[8],1.0f,LITEGRAY,(0xFF<<0)+(val<<24)+(val<<16)+(val),0.f,0);
 			x = intraFontPrint(ltn[8],x,y,"flashing");
 			intraFontSetStyle(ltn[8],1.0f,WHITE,DARKGRAY,0.f,0);
 
 			y += 17;
 			intraFontPrint(ltn[8],10,y,"Spacing: ");
-			intraFontSetStyle(ltn[8],1.0f,WHITE,DARKGRAY,0.f,INTRAFONT_WIDTH_FIX);
+			/*intraFontSetStyle(ltn[8],1.0f,WHITE,DARKGRAY,0.f,INTRAFONT_WIDTH_FIX);
 			x = intraFontPrint(ltn[8],80,y,"fixed (default),");
 					intraFontSetStyle(ltn[8],1.0f,WHITE,DARKGRAY,0.f,INTRAFONT_WIDTH_FIX | 12);
 			x = intraFontPrint(ltn[8],x,y,"fixed (12),");

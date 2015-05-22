@@ -1166,7 +1166,7 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 					// Screen coords
 					xl = left + width + glyph->left*glyphscale;
 					xr = xl + glyph->width*glyphscale;
-					yu = top + height - glyph->top *glyphscale;
+					yu = top + height - glyph->top*glyphscale;
 					yd = yu + glyph->height*glyphscale;
 
 					// Tex coords
@@ -1175,33 +1175,28 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 					vu = (glyph->y - 0.25f)                 / (float)font->texHeight;
 					vd = (glyph->y + glyph->height + 0.25f) / (float)font->texHeight;
 
+					v0 = &v[c_index * 4];
+					v1 = v0 + 1;
+					v2 = v1 + 1;
+					v3 = v2 + 1;
+
+					// Up-left
+					v0->u = ul, v0->v = vu;
+					v0->x = xl, v0->y = yu; v0->z = 0.5f;
+
+					// Up-right
+					v1->u = ur, v1->v = vu;
+					v1->x = xr, v1->y = yu; v1->z = 0.5f;
+
+					// Down-left
+					v2->u = ul, v2->v = vd;
+					v2->x = xl, v2->y = yd; v2->z = 0.5f;
+
+					// Down-right
+					v3->u = ur, v3->v = vd;
+					v3->x = xr, v3->y = yd; v3->z = 0.5f;
+
 					if (font->isRotated) {
-						v0 = &v[c_index * 4];
-						v1 = v0 + 1;
-						v2 = v1 + 1;
-						v3 = v2 + 1;
-
-						// Up-left
-						v0->u = ul, v0->v = vu;
-						//v0->c = color;
-						v0->x = xl, v0->y = yu; v0->z = 0.5f;
-
-						// Up-right
-						v1->u = ur, v1->v = vu;
-						//v1->c = color;
-						v1->x = xr, v1->y = yu; v1->z = 0.5f;
-
-						// Down-left
-						v2->u = ul, v2->v = vd;
-						//v3->c = color;
-						v2->x = xl, v2->y = yd; v2->z = 0.5f;
-
-						// Down-right
-						v3->u = ur, v3->v = vd;
-						//v2->c = color;
-						v3->x = xr, v3->y = yd; v3->z = 0.5f;
-
-
 						// Apply rotation to each vertex
 						// x' = x cos θ - y sin θ
 						// y' = x sin θ + y cos θ
@@ -1220,31 +1215,6 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 						vx = x + (v3->x - x) * font->Rcos - (v3->y - y) * font->Rsin;
 						vy = y + (v3->x - x) * font->Rsin + (v3->y - y) * font->Rcos;
 						v3->x = vx, v3->y = vy;
-					} else {
-						v0 = &v[c_index * 4];
-						v1 = v0 + 1;
-						v2 = v1 + 1;
-						v3 = v2 + 1;
-
-						// Up-left
-						v0->u = ul, v0->v = vu;
-						//v0->c = color;
-						v0->x = xl, v0->y = yu; v0->z = 0.5f;
-
-						// Up-right
-						v1->u = ur, v1->v = vu;
-						//v1->c = color;
-						v1->x = xr, v1->y = yu; v1->z = 0.5f;
-
-						// Down-left
-						v2->u = ul, v2->v = vd;
-						//v2->c = color;
-						v2->x = xl, v2->y = yd; v2->z = 0.5f;
-
-						// Down-right
-						v3->u = ur, v3->v = vd;
-						//v3->c = color;
-						v3->x = xr, v3->y = yd; v3->z = 0.5f;
 					}
 
 					c_index++;
@@ -1266,32 +1236,28 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 				vu = (shadowGlyph->y - 0.25f)                       / (float)font->texHeight;
 				vd = (shadowGlyph->y + shadowGlyph->height + 0.25f) / (float)font->texHeight;
 
+				s0 = &v[s_index * 4];
+				s1 = s0 + 1;
+				s2 = s1 + 1;
+				s3 = s2 + 1;
+
+				// Up-left
+				s0->u = ul, s0->v = vu;
+				s0->x = xl, s0->y = yu; s0->z = 0.5f;
+
+				// Up-right
+				s1->u = ur, s1->v = vu;
+				s1->x = xr, s1->y = yu; s1->z = 0.5f;
+
+				// Down-left
+				s2->u = ul, s2->v = vd;
+				s2->x = xl, s2->y = yd; s2->z = 0.5f;
+
+				// Down-right
+				s3->u = ur, s3->v = vd;
+				s3->x = xr, s3->y = yd; s3->z = 0.5f;
+
 				if (font->isRotated) {
-					s0 = &v[s_index * 4];
-					s1 = s0 + 1;
-					s2 = s1 + 1;
-					s3 = s2 + 1;
-
-					// Up-left
-					s0->u = ul, s0->v = vu;
-					//s0->c = shadowColor;
-					s0->x = xl, s0->y = yu;
-
-					// Up-right
-					s1->u = ur, s1->v = vu;
-					//s1->c = shadowColor;
-					s1->x = xr, s1->y = yu;
-
-					// Down-left
-					s2->u = ul, s2->v = vd;
-					//s2->c = shadowColor;
-					s2->x = xl, s2->y = yd;
-
-					// Down-right
-					s3->u = ur, s3->v = vd;
-					//s3->c = shadowColor;
-					s3->x = xr, s3->y = yd;
-
 					// Rotate 'em all
 					float sx, sy;
 					sx = x + (s0->x - x) * font->Rcos - (s0->y - y) * font->Rsin;
@@ -1306,32 +1272,6 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 					sx = x + (s3->x - x) * font->Rcos - (s3->y - y) * font->Rsin;
 					sy = y + (s3->x - x) * font->Rsin + (s3->y - y) * font->Rcos;
 					s3->x = sx, s3->y = sy;
-
-				} else {
-					s0 = &v[s_index * 4];
-					s1 = s0 + 1;
-					s2 = s1 + 1;
-					s3 = s2 + 1;
-
-					// Up-left
-					s0->u = ul, s0->v = vu;
-					//s0->c = shadowColor;
-					s0->x = xl, s0->y = yu;
-
-					// Up-right
-					s1->u = ur, s1->v = vu;
-					//s1->c = shadowColor;
-					s1->x = xr, s1->y = yu;
-
-					// Down-left
-					s2->u = ul, s2->v = vd;
-					//s2->c = shadowColor;
-					s2->x = xl, s2->y = yd;
-
-					// Down-right
-					s3->u = ur, s3->v = vd;
-					//s3->c = shadowColor;
-					s3->x = xr, s3->y = yd;
 				}
 
 				s_index++;
@@ -1364,14 +1304,7 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 		intraFontActivate(font);
 	}
 
-	//sceGuDisable(GU_DEPTH_TEST);
-	//sceGuDrawArray(int prim, int vtype, int count, const void* indices, const void* vertices)
-	/*sceGuDrawArray(
-		(font->isRotated ? GU_TRIANGLES : GU_SPRITES),
-		GU_TEXTURE_32BITF|GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_2D,
-		(n_glyphs+n_sglyphs)*(font->isRotated ? 6 : 2),
-		0,
-		v);*/
+	/* Draw the glyphes */
 
 	GPU_SetTexEnv(
 		0,
@@ -1383,32 +1316,50 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 		__builtin_bswap32(font->color)
 	);
 
-	for (i = 0; i < (n_glyphs+n_sglyphs); i++) {
-		//fontVertex *f = (v + i*4);
-		//if (f->x > 10 && f->x < 200 && f->y > 10 && f->y < 200) {
-			GPU_SetAttributeBuffers(
-				2, // number of attributes
-				(u32*)osConvertVirtToPhys((u32)(v + i*4)),
-				GPU_ATTRIBFMT(0, 3, GPU_FLOAT) | GPU_ATTRIBFMT(1, 2, GPU_FLOAT),
-				0xFFFC, //0b1100
-				0x10,
-				1, //number of buffers
-				(u32[]){0x0}, // buffer offsets (placeholders)
-				(u64[]){0x10}, // attribute permutations for each buffer
-				(u8[]){2} // number of attributes for each buffer
-			);
-			GPU_DrawArray(GPU_TRIANGLE_STRIP, 4);
-		//}
+	for (i = n_glyphs; i < (n_glyphs+n_sglyphs); i++) {
+		GPU_SetAttributeBuffers(
+			2, // number of attributes
+			(u32*)osConvertVirtToPhys((u32)(v + i*4)),
+			GPU_ATTRIBFMT(0, 3, GPU_FLOAT) | GPU_ATTRIBFMT(1, 2, GPU_FLOAT),
+			0xFFFC, //0b1100
+			0x10,
+			1, //number of buffers
+			(u32[]){0x0}, // buffer offsets (placeholders)
+			(u64[]){0x10}, // attribute permutations for each buffer
+			(u8[]){2} // number of attributes for each buffer
+		);
+		GPU_DrawArray(GPU_TRIANGLE_STRIP, 4);
+	}
+
+	/* Draw the Shadow glyphes */
+
+	GPU_SetTexEnv(
+		0,
+		GPU_TEVSOURCES(GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT),
+		GPU_TEVSOURCES(GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT),
+		GPU_TEVOPERANDS(0, 0, 0),
+		GPU_TEVOPERANDS(0, 0, 0),
+		GPU_MODULATE, GPU_MODULATE,
+		__builtin_bswap32(font->shadowColor)
+	);
+
+	for (i = 0; i < n_sglyphs; i++) {
+		GPU_SetAttributeBuffers(
+			2, // number of attributes
+			(u32*)osConvertVirtToPhys((u32)(v + i*4)),
+			GPU_ATTRIBFMT(0, 3, GPU_FLOAT) | GPU_ATTRIBFMT(1, 2, GPU_FLOAT),
+			0xFFFC, //0b1100
+			0x10,
+			1, //number of buffers
+			(u32[]){0x0}, // buffer offsets (placeholders)
+			(u64[]){0x10}, // attribute permutations for each buffer
+			(u8[]){2} // number of attributes for each buffer
+		);
+		GPU_DrawArray(GPU_TRIANGLE_STRIP, 4);
 	}
 
 
 	if (font->fileType == FILETYPE_BWFON) {
-		/*sceGuDrawArray(
-			(font->isRotated ? GU_TRIANGLES : GU_SPRITES),
-			GU_TEXTURE_32BITF|GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_2D,
-			n_glyphs*(font->isRotated ? 6 : 2),
-			0,
-			v+(n_sglyphs*(font->isRotated ? 6 : 2)));*/
 
 		GPU_SetTexEnv(
 			0,
@@ -1435,8 +1386,6 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 			GPU_DrawArray(GPU_TRIANGLE_STRIP, 4);
 		}
 	}
-
-	//sceGuEnable(GU_DEPTH_TEST);
 
 	if (scroll == 1) {
 		sf2d_set_scissor_test(GPU_SCISSOR_NORMAL, 0, 0, 400, 240); //reset window to whole screen (test was previously enabled)

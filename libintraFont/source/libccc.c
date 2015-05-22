@@ -86,9 +86,9 @@ int cccLZRDecompress(void *out, unsigned int out_capacity, void *in, void *in_en
 
 	signed char type = *(signed char*)in;
 	unsigned int buffer = ((unsigned int)*(unsigned char*)(in+1) << 24) +
-												((unsigned int)*(unsigned char*)(in+2) << 16) +
-												((unsigned int)*(unsigned char*)(in+3) <<	 8) +
-												((unsigned int)*(unsigned char*)(in+4)			);
+		((unsigned int)*(unsigned char*)(in+2) << 16) +
+		((unsigned int)*(unsigned char*)(in+3) << 8) +
+		((unsigned int)*(unsigned char*)(in+4));
 	next_in = (in_end) ? in_end : &tmp; //use user provided counter if available
 	*next_in = in + 5;
 	next_out = out;
@@ -207,7 +207,8 @@ int cccLoadTable(const char *filename, unsigned char cp) {
 	FILE *fp = fopen(filename, "rb");
 	if (fp == NULL) return CCC_ERROR_FILE_READ;
 
-	unsigned int filesize = fseek(fp, 0, SEEK_END);
+	fseek(fp, 0, SEEK_END);
+	unsigned int filesize = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
 	void* table_data = (void*)malloc(filesize);
@@ -255,7 +256,7 @@ void cccInit(void) {
 			__table_end__[cp] = NULL;
 			__table_dyn__[cp] = 0;
 		}
-		//cccLoadTable("flash0:/vsh/etc/cptbl.dat", 0); //this would load all tables available, but it's done on demand
+		//cccLoadTable("/cptbl.dat", 0); //this would load all tables available, but it's done on demand
 		cccInitialized = 1;
 	}
 }
@@ -355,7 +356,7 @@ int cccStrlenUCS2(cccUCS2 const * str) {
 int cccSJIStoUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 	if (!str || !dst) return 0;
 	if (!cccInitialized) cccInit();
-	if (!(__table_ptr__[CCC_CP932])) cccLoadTable("flash0:/vsh/etc/cptbl.dat", CCC_CP932);
+	if (!(__table_ptr__[CCC_CP932])) cccLoadTable("/cptbl.dat", CCC_CP932);
 
 	int i = 0, length = 0, j, code, id;
 	if (__table_ptr__[CCC_CP932]) { //table is present
@@ -386,7 +387,7 @@ int cccSJIStoUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 int cccGBKtoUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 	if (!str || !dst) return 0;
 	if (!cccInitialized) cccInit();
-	if (!(__table_ptr__[CCC_CP936])) cccLoadTable("flash0:/vsh/etc/cptbl.dat", CCC_CP936);
+	if (!(__table_ptr__[CCC_CP936])) cccLoadTable("/cptbl.dat", CCC_CP936);
 
 	unsigned char* entry;
 	unsigned short code;
@@ -420,7 +421,7 @@ int cccGBKtoUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 int cccKORtoUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 	if (!str || !dst) return 0;
 	if (!cccInitialized) cccInit();
-	if (!(__table_ptr__[CCC_CP949])) cccLoadTable("flash0:/vsh/etc/cptbl.dat", CCC_CP949);
+	if (!(__table_ptr__[CCC_CP949])) cccLoadTable("/cptbl.dat", CCC_CP949);
 
 	unsigned char* entry;
 	unsigned short code;
@@ -454,7 +455,7 @@ int cccKORtoUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 int cccBIG5toUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 	if (!str || !dst) return 0;
 	if (!cccInitialized) cccInit();
-	if (!(__table_ptr__[CCC_CP950])) cccLoadTable("flash0:/vsh/etc/cptbl.dat", CCC_CP950);
+	if (!(__table_ptr__[CCC_CP950])) cccLoadTable("/cptbl.dat", CCC_CP950);
 
 	typedef struct {
 		unsigned short code;
@@ -505,7 +506,7 @@ int cccUTF8toUCS2(cccUCS2 * dst, size_t count, cccCode const * str) {
 		} else if (str[i] <= 0xEFU) { //3-byte
 			dst[length] = ((str[i]&0x001fu)<<12) | ((str[i+1]&0x003fu)<<6) | (str[i+2]&0x003fu);
 			i += 3; length++;
-		} else i++;										 //4-byte, restricted or invalid range ->ignore
+		} else i++;                  //4-byte, restricted or invalid range ->ignore
 	}
 		return length;
 }
@@ -525,7 +526,7 @@ int cccCodetoUCS2(cccUCS2 * dst, size_t count, cccCode const * str, unsigned cha
 		default:
 			if (cp < CCC_N_CP) { //codepage in range?
 				if (!cccInitialized) cccInit();
-				if (!(__table_ptr__[cp]) && (cp > 0)) cccLoadTable("flash0:/vsh/etc/cptbl.dat", cp);
+				if (!(__table_ptr__[cp]) && (cp > 0)) cccLoadTable("/cptbl.dat", cp);
 				while (str[length] && length < count) { //conversion: ASCII (if ASCII) or LUT-value (if LUT exists) or error_char (if LUT doesn't exist)
 					if (str[length] < 0x80) {
 						dst[length] = (cccUCS2)str[length];
