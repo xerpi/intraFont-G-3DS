@@ -365,6 +365,9 @@ int intraFontPreCache(intraFont *font, unsigned int options)
 
 intraFont* intraFontLoad(const char *filename, unsigned int options)
 {
+	// 3DS HACK: Force INTRAFONT_CACHE_ASCII in order to always tile the textures
+	options |= INTRAFONT_CACHE_ASCII;
+
 	unsigned long i, j;
 	static Glyph bw_glyph       = { 0, 0, 16, 18, 0, 15, PGF_BMP_H_ROWS, 0, 64, 0 };
 	static Glyph bw_shadowGlyph = { 0, 0, 8,  10, 0, 5,  PGF_BMP_H_ROWS, 0, 64, 0 };
@@ -771,16 +774,6 @@ void intraFontActivate(intraFont *font)
 
 	GPU_SetTextureEnable(GPU_TEXUNIT0);
 
-	GPU_SetTexEnv(
-		0,
-		GPU_TEVSOURCES(GPU_TEXTURE0, GPU_TEXTURE0, GPU_TEXTURE0),
-		GPU_TEVSOURCES(GPU_TEXTURE0, GPU_TEXTURE0, GPU_TEXTURE0),
-		GPU_TEVOPERANDS(0, 0, 0),
-		GPU_TEVOPERANDS(0, 0, 0),
-		GPU_REPLACE, GPU_REPLACE,
-		0xFFFFFFFF
-	);
-
 	GPU_SetTexture(
 		GPU_TEXUNIT0,
 		(u32 *)osConvertVirtToPhys((u32)font->texture),
@@ -1113,7 +1106,7 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 					}
 					if (j == length) {
 						eol = length;																									//last line
-						while ((text[eol-1] == ' ') && (eol > 1)) eol--;									//do not display trailing spaces
+						while ((text[eol-1] == ' ') && (eol > 1)) eol--;	//do not display trailing spaces
 					}
 
 					left = x;
@@ -1380,19 +1373,32 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 		0,
 		v);*/
 
+	GPU_SetTexEnv(
+		0,
+		GPU_TEVSOURCES(GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT),
+		GPU_TEVSOURCES(GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT),
+		GPU_TEVOPERANDS(0, 0, 0),
+		GPU_TEVOPERANDS(0, 0, 0),
+		GPU_MODULATE, GPU_MODULATE,
+		__builtin_bswap32(font->color)
+	);
+
 	for (i = 0; i < (n_glyphs+n_sglyphs); i++) {
-		GPU_SetAttributeBuffers(
-			2, // number of attributes
-			(u32*)osConvertVirtToPhys((u32)(v + i*4)),
-			GPU_ATTRIBFMT(0, 3, GPU_FLOAT) | GPU_ATTRIBFMT(1, 2, GPU_FLOAT),
-			0xFFFC, //0b1100
-			0x10,
-			1, //number of buffers
-			(u32[]){0x0}, // buffer offsets (placeholders)
-			(u64[]){0x10}, // attribute permutations for each buffer
-			(u8[]){2} // number of attributes for each buffer
-		);
-		GPU_DrawArray(GPU_TRIANGLE_STRIP, 4);
+		//fontVertex *f = (v + i*4);
+		//if (f->x > 10 && f->x < 200 && f->y > 10 && f->y < 200) {
+			GPU_SetAttributeBuffers(
+				2, // number of attributes
+				(u32*)osConvertVirtToPhys((u32)(v + i*4)),
+				GPU_ATTRIBFMT(0, 3, GPU_FLOAT) | GPU_ATTRIBFMT(1, 2, GPU_FLOAT),
+				0xFFFC, //0b1100
+				0x10,
+				1, //number of buffers
+				(u32[]){0x0}, // buffer offsets (placeholders)
+				(u64[]){0x10}, // attribute permutations for each buffer
+				(u8[]){2} // number of attributes for each buffer
+			);
+			GPU_DrawArray(GPU_TRIANGLE_STRIP, 4);
+		//}
 	}
 
 
@@ -1403,6 +1409,17 @@ float intraFontPrintColumnUCS2Ex(intraFont *font, float x, float y, float column
 			n_glyphs*(font->isRotated ? 6 : 2),
 			0,
 			v+(n_sglyphs*(font->isRotated ? 6 : 2)));*/
+
+		GPU_SetTexEnv(
+			0,
+			GPU_TEVSOURCES(GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT),
+			GPU_TEVSOURCES(GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT),
+			GPU_TEVOPERANDS(0, 0, 0),
+			GPU_TEVOPERANDS(0, 0, 0),
+			GPU_MODULATE, GPU_MODULATE,
+			__builtin_bswap32(font->shadowColor)
+		);
+
 		for (i = 0; i < n_glyphs; i++) {
 			GPU_SetAttributeBuffers(
 				2, // number of attributes
